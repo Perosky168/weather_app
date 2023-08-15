@@ -1,9 +1,44 @@
+import 'dart:convert';
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
+import 'package:weather_app/hourly_forcast_item.dart';
+import 'package:weather_app/secrets.dart';
+import 'additional_info_item.dart';
+import 'package:http/http.dart' as http;
 
-class WeatherScreen extends StatelessWidget {
+class WeatherScreen extends StatefulWidget {
   const WeatherScreen({super.key});
+
+  @override
+  State<WeatherScreen> createState() => _WeatherScreenState();
+}
+
+class _WeatherScreenState extends State<WeatherScreen> {
+  @override
+  void initState() {
+    super.initState();
+    getCurrencyWeather();
+  }
+
+  Future getCurrencyWeather() async {
+    try {
+      String cityName = 'London';
+      final res = await http.get(
+        Uri.parse(
+          'https://api.openweathermap.org/data/2.5/forecast?q=$cityName,uk&APPID=$openWeatherApiKey',
+        ),
+      );
+      final data = jsonDecode(res.body);
+
+      if (data['cod'] != '200') {
+        throw 'An unexpected error';
+      }
+
+      print(data['list'][0]['main']['temp']);
+    } catch (e) {
+      throw e.toString();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,16 +116,36 @@ class WeatherScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             const SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  HourlyForcastItem(),
-                  HourlyForcastItem(),
-                  HourlyForcastItem(),
-                  HourlyForcastItem(),
-                  HourlyForcastItem(),
+                  HourlyForcastItem(
+                    time: '03:00',
+                    temp: '300.12',
+                    icon: Icons.cloud,
+                  ),
+                  HourlyForcastItem(
+                    time: '06:00',
+                    temp: '330.12',
+                    icon: Icons.sunny,
+                  ),
+                  HourlyForcastItem(
+                    time: '09:00',
+                    temp: '300.12',
+                    icon: Icons.cloud,
+                  ),
+                  HourlyForcastItem(
+                    time: '12:00',
+                    temp: '350.00',
+                    icon: Icons.sunny,
+                  ),
+                  HourlyForcastItem(
+                    time: '03:00',
+                    temp: '290.00',
+                    icon: Icons.cloud,
+                  ),
                 ],
               ),
             ),
@@ -102,44 +157,27 @@ class WeatherScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class HourlyForcastItem extends StatelessWidget {
-  const HourlyForcastItem({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 6,
-      child: Container(
-        width: 100,
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: const Column(
-          children: [
-            Text(
-              '03:00',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8),
-            Icon(
-              Icons.cloud,
-              size: 32,
-            ),
-            SizedBox(height: 8),
-            Text(
-              '320.12',
-            ),
+            const SizedBox(height: 10),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                AdditionalInfoItem(
+                  icon: Icons.water_drop,
+                  label: 'Humidity',
+                  value: '91',
+                ),
+                AdditionalInfoItem(
+                  icon: Icons.air,
+                  label: 'Windspeed',
+                  value: '7.5',
+                ),
+                AdditionalInfoItem(
+                  icon: Icons.timer,
+                  label: 'Pressure',
+                  value: '1000',
+                ),
+              ],
+            )
           ],
         ),
       ),
